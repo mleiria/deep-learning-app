@@ -1,8 +1,9 @@
 package pt.mleiria.data.importer;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pt.mleiria.Config;
-import pt.mleiria.core.JacksonUtils;
 import pt.mleiria.core.StopWatch;
 import pt.mleiria.vo.AdvancedGlycationEndproductRawVo;
 import pt.mleiria.vo.DataLocation;
@@ -12,28 +13,21 @@ import javax.sql.DataSource;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class AgeProcessor implements GenericProcessor {
 
-    private final Function<AdvancedGlycationEndproductRawVo, String> ageToUniqueString =
-            ageVo -> ageVo.getTimestamp() + "|" + ageVo.getScore();
+    private static final Logger logger = LoggerFactory.getLogger(AgeProcessor.class);
 
-    private final BiFunction<Path, Set<String>, Stream<JsonDocument>> agePathToJsonDocumentsBiFunction = this::agePathToJsonDocuments;
 
-    private Stream<JsonDocument> agePathToJsonDocuments(Path path, Set<String> existingData) {
+    private final Function<Path, Stream<JsonDocument>> agePathToJsonDocumentsBiFunction = this::agePathToJsonDocuments;
+
+    private Stream<JsonDocument> agePathToJsonDocuments(Path path) {
         return pathToJsonDocumentsGeneric(
                 path,
-                existingData,
                 new TypeReference<List<AdvancedGlycationEndproductRawVo>>() {
-                }, // The specific TypeReference for AGE
-                ageToUniqueString                                             // The specific function for AGE
-        );
+                });
     }
 
     private final DataLocation dataLocation = DataLocation.ADVANCED_GLYCATION_ENDPRODUCT;
@@ -43,15 +37,11 @@ public class AgeProcessor implements GenericProcessor {
         final Path startPath = Paths.get(Config.DATA_FOLDER.getValue() + dataLocation.getFolderName());
         // Get the existing data to avoid duplicates.
         final StopWatch sw = new StopWatch();
-        final Set<String> existingData = listJsonData(ds, dataLocation.getTableName())
-                .stream()
-                .parallel()
-                .collect(Collectors.toSet());
 
         logger.info("Running time: {} secs", sw.stop());
         logger.info("Starting {} for JSON files...", this.getClass().getName());
         sw.start();
-        processDirectory(startPath, ds, existingData, agePathToJsonDocumentsBiFunction, dataLocation);
+        processDirectory(startPath, ds, agePathToJsonDocumentsBiFunction, dataLocation);
         logger.info("Running time: {} secs", sw.stop());
     }
 

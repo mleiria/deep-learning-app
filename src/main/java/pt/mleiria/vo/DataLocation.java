@@ -5,7 +5,8 @@ public enum DataLocation {
     ADVANCED_GLYCATION_ENDPRODUCT("com.samsung.health.advanced_glycation_endproduct.raw", "advanced_glycation_endproduct_raw"),
     HRV("com.samsung.health.hrv", "hrv"),
     MOVEMENT("com.samsung.health.movement", "movement"),
-    RESPIRATORY_RATE("com.samsung.health.respiratory_rate", "respiratory_rate");
+    RESPIRATORY_RATE("com.samsung.health.respiratory_rate", "respiratory_rate"),
+    CALORIES_BURNED("com.samsung.shealth.calories_burned.details", "calories_burned_details");
 
 
     public final String folderName;
