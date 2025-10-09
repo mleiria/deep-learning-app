@@ -1,4 +1,4 @@
-package pt.mleiria;
+package pt.mleiria.data.importer.config;
 
 public enum Config {
 

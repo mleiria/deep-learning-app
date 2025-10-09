@@ -4,13 +4,15 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.mleiria.core.JacksonUtils;
-import pt.mleiria.vo.DataLocation;
-import pt.mleiria.vo.JsonDocument;
+import pt.mleiria.data.importer.config.Config;
+import pt.mleiria.data.importer.config.DataLocation;
+import pt.mleiria.db.JsonDocument;
 
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -38,7 +40,9 @@ public interface GenericProcessor {
      */
     void processJsonFilesInFolder(final DataSource ds);
 
-
+    default Path getStartPath(final DataLocation dataLocation){
+        return Paths.get(Config.DATA_FOLDER.getValue() + dataLocation.getFolderName());
+    }
 
     /**
      * Processes a directory, finds JSON files, decodes them, and inserts their contents into the database.

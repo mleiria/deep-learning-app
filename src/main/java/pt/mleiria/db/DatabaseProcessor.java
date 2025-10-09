@@ -1,14 +1,16 @@
 package pt.mleiria.db;
 
+import org.postgresql.copy.CopyManager;
+import org.postgresql.core.BaseConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pt.mleiria.vo.DataLocation;
-import pt.mleiria.vo.JsonDocument;
+import pt.mleiria.core.StopWatch;
+import pt.mleiria.data.importer.config.DataLocation;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.io.IOException;
+import java.io.StringReader;
+import java.sql.*;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -54,8 +56,8 @@ public class DatabaseProcessor {
      * @param tableName the name of the table
      * @return a Set of file path strings
      */
-    public static Set<String> listJsonFilePaths(DataSource ds, final String tableName) {
-        return listJson(ds, tableName, "file_path");
+    public static Set<String> listDistinctJsonFilePaths(DataSource ds, final String tableName) {
+        return listDistinctJson(ds, tableName, "file_path");
     }
     /**
      * Lists all entries from a specified row in the specified table in the database.
@@ -67,8 +69,36 @@ public class DatabaseProcessor {
      */
     public static Set<String> listJson(DataSource ds, final String tableName, final String rowName) {
         final String sql = "SELECT " + rowName + " FROM " + tableName;
+        logger.info("Executing SQL: {}", sql);
         try (final Connection conn = ds.getConnection()) {
             final PreparedStatement pstmt = conn.prepareStatement(sql);
+            var rs = pstmt.executeQuery();
+            final Set<String> jsonData = new HashSet<>();
+            while (rs.next()) {
+                jsonData.add(rs.getString(rowName));
+            }
+            return jsonData;
+        } catch (SQLException e) {
+            logger.error("Failed to list data from {}: {}", tableName, e.getMessage());
+            return Collections.emptySet();
+        }
+    }
+    /**
+     * Lists all distinct entries from a specified row in the specified table in the database.
+     *
+     * @param ds        the DataSource for database connections
+     * @param tableName the name of the table
+     * @param rowName   the name of the row to retrieve data from
+     * @return a Set of distinct strings from the specified row
+     */
+    public static Set<String> listDistinctJson(DataSource ds, final String tableName, final String rowName) {
+        final String sql = "SELECT DISTINCT(" + rowName + ") FROM " + tableName;
+        logger.info("Executing SQL: {}", sql);
+        try (final Connection conn = ds.getConnection();
+            final PreparedStatement pstmt = conn.prepareStatement(sql)){
+
+            pstmt.setFetchSize(1000); // Adjust fetch size as needed
+
             var rs = pstmt.executeQuery();
             final Set<String> jsonData = new HashSet<>();
             while (rs.next()) {
@@ -114,13 +144,15 @@ public class DatabaseProcessor {
      * @return the number of records inserted
      */
     public static int insertJsonDocumentsInBatch(final DataSource ds, final DataLocation tableName, final List<JsonDocument> documents) {
-
-        final Set<String> existingFilePaths = listJsonFilePaths(ds, tableName.getTableName());
+        final StopWatch sw = new StopWatch();
+        final Set<String> existingFilePaths = listDistinctJsonFilePaths(ds, tableName.getTableName());
         final List<JsonDocument> newDocuments = documents.stream()
                 .filter(doc -> !existingFilePaths.contains(doc.sourcePath().toString()))
                 .toList();
-
-
+        logger.info("Found {} new documents to insert after filtering existing file paths. Time taken: {} secs", newDocuments.size(), sw.stop());
+        if(newDocuments.isEmpty()) {
+            return 0;
+        }
         final String sql = "INSERT INTO " + tableName.getTableName() + "(file_path, uuid, data) VALUES (?, ?, ?::jsonb)";
         final int BATCH_SIZE = 1000; // A good starting point for batch size
         int count = 0;
@@ -146,5 +178,61 @@ public class DatabaseProcessor {
             logger.error("Error during batch insert: {}", e.getMessage());
         }
         return count;
+    }
+
+    public static List<JsonDocument> findNewDocuments(DataSource ds, String tableName, List<JsonDocument> candidateDocuments) {
+        final String tempTableName = "new_paths_temp_" + System.currentTimeMillis();
+        final String createTempTableSql = "CREATE TEMPORARY TABLE " + tempTableName + " (file_path TEXT PRIMARY KEY) ON COMMIT DROP";
+
+        // This is the main try block for the connection
+        try (Connection conn = ds.getConnection()) {
+            conn.setAutoCommit(false);
+
+            // --- THE FIX IS HERE ---
+            // We need the raw PostgreSQL connection to use the CopyManager.
+            // The connection from a pool is a proxy, so we must unwrap it.
+            BaseConnection pgConnection = conn.unwrap(BaseConnection.class);
+            // -----------------------
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute(createTempTableSql);
+            }
+
+            // Now use the unwrapped connection with the CopyManager
+            CopyManager copyManager = new CopyManager(pgConnection);
+            StringBuilder sb = new StringBuilder();
+            for (JsonDocument doc : candidateDocuments) {
+                sb.append(doc.sourcePath().toString()).append("\n");
+            }
+
+            try (StringReader reader = new StringReader(sb.toString())) {
+                copyManager.copyIn("COPY " + tempTableName + " (file_path) FROM STDIN", reader);
+            }
+
+            final String findNewPathsSql = "SELECT t.file_path FROM " + tempTableName + " t " +
+                    "LEFT JOIN " + tableName + " m ON t.file_path = m.file_path " +
+                    "WHERE m.file_path IS NULL";
+
+            Set<String> newFilePaths;
+            try (PreparedStatement pstmt = conn.prepareStatement(findNewPathsSql);
+                 ResultSet rs = pstmt.executeQuery()) {
+
+                newFilePaths = new HashSet<>();
+                while (rs.next()) {
+                    newFilePaths.add(rs.getString(1));
+                }
+            }
+
+            conn.commit();
+
+            return candidateDocuments.stream()
+                    .filter(doc -> newFilePaths.contains(doc.sourcePath().toString()))
+                    .toList();
+
+        } catch (SQLException | IOException e) {
+            // It's good practice to also log the exception's stack trace for debugging
+            logger.error("Failed to find new documents using temp table strategy: {}", e.getMessage(), e);
+            return Collections.emptyList();
+        }
     }
 }

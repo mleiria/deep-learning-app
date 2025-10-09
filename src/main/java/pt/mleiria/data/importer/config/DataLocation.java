@@ -1,4 +1,4 @@
-package pt.mleiria.vo;
+package pt.mleiria.data.importer.config;
 
 public enum DataLocation {
 
@@ -6,7 +6,10 @@ public enum DataLocation {
     HRV("com.samsung.health.hrv", "hrv"),
     MOVEMENT("com.samsung.health.movement", "movement"),
     RESPIRATORY_RATE("com.samsung.health.respiratory_rate", "respiratory_rate"),
-    CALORIES_BURNED("com.samsung.shealth.calories_burned.details", "calories_burned_details");
+    CALORIES_BURNED("com.samsung.shealth.calories_burned.details", "calories_burned_details"),
+    EXERCISE("com.samsung.shealth.exercise", "exercise"),
+    RECOVERY_HEART_RATE("com.samsung.shealth.exercise.recovery_heart_rate", "recovery_heart_rate"),
+    HEART_RATE("com.samsung.shealth.tracker.heart_rate", "heart_rate");
 
 
     public final String folderName;
