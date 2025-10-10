@@ -13,7 +13,7 @@ public class DataSourceFactory {
     public static DataSource getDataSource() {
         if (dataSource == null) {
             HikariConfig config = new HikariConfig();
-            config.setJdbcUrl(Config.DB_URL_REMOTE.getValue());
+            config.setJdbcUrl(Config.DB_URL_LOCAL.getValue());
             config.setUsername(Config.USER.getValue());
             config.setPassword(Config.PASSWORD.getValue());
             // Tuning: Set pool size based on your DB server's capacity
