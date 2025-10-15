@@ -32,11 +32,14 @@ public class HeartRateQueryExec {
 
     public HeartRateQueryExec() {
         this.ds = DataSourceFactory.getDataSource();
-        ;
         this.properties = ConfigLoader.loadProperties(PROPERTIES_FILE);
 
     }
-
+    /**
+     * Selects all records from the heart_rate table and returns them as a Tablesaw Table.
+     *
+     * @return A Tablesaw Table containing all records from the heart_rate table.
+     */
     public Table selectAll() {
         final String sql = properties.getProperty("select.all");
         logger.info("Executing SQL: {}", sql);
@@ -88,7 +91,13 @@ public class HeartRateQueryExec {
             return Table.create("Error Table");
         }
     }
-
+    /**
+     * Executes the given SQL query that returns JSON data and maps it to HeartRateVo objects,
+     * then converts the list of HeartRateVo objects into a Tablesaw Table.
+     *
+     * @param sql The SQL query to execute.
+     * @return A Tablesaw Table containing the mapped HeartRateVo data.
+     */
     public Table executeQueryForJson(final String sql) {
         try (final Connection conn = ds.getConnection();
              final PreparedStatement pstmt = conn.prepareStatement(sql)) {

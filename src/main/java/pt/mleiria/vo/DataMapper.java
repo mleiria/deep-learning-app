@@ -1,6 +1,8 @@
 package pt.mleiria.vo;
 
+import pt.mleiria.core.DateUtils;
 import pt.mleiria.core.Validator;
+import tech.tablesaw.api.DateTimeColumn;
 import tech.tablesaw.api.Table;
 
 import java.util.List;
@@ -21,12 +23,18 @@ public class DataMapper {
         final Table table = Table.create("Heart Rate Data");
         if (Validator.isNotEmptyList(heartRateVoList)) {
             table.addColumns(
-                    tech.tablesaw.api.LongColumn.create("startTime", heartRateVoList.stream().mapToLong(HeartRateVo::getStartTime).toArray()),
-                    tech.tablesaw.api.LongColumn.create("endTime", heartRateVoList.stream().mapToLong(HeartRateVo::getEndTime).toArray()),
-                    tech.tablesaw.api.DoubleColumn.create("heartRate", heartRateVoList.stream().mapToDouble(HeartRateVo::getHeartRate).toArray()),
-                    tech.tablesaw.api.DoubleColumn.create("heartRateMin", heartRateVoList.stream().mapToDouble(HeartRateVo::getHeartRateMin).toArray()),
-                    tech.tablesaw.api.DoubleColumn.create("heartRateMax", heartRateVoList.stream().mapToDouble(HeartRateVo::getHeartRateMax).toArray())
-            );
+                    DateTimeColumn.create(
+                            "startTime",
+                            heartRateVoList.stream()
+                                    .map(vo -> DateUtils.convertTimestampToLocalDateTime.apply(vo.getStartTime()))),
+                    DateTimeColumn.create(
+                            "endTime",
+                            heartRateVoList.stream()
+                                    .map(vo -> DateUtils.convertTimestampToLocalDateTime.apply(vo.getEndTime()))),
+                            tech.tablesaw.api.DoubleColumn.create("heartRate", heartRateVoList.stream().mapToDouble(HeartRateVo::getHeartRate).toArray()),
+                            tech.tablesaw.api.DoubleColumn.create("heartRateMin", heartRateVoList.stream().mapToDouble(HeartRateVo::getHeartRateMin).toArray()),
+                            tech.tablesaw.api.DoubleColumn.create("heartRateMax", heartRateVoList.stream().mapToDouble(HeartRateVo::getHeartRateMax).toArray())
+                    );
         }
         return table;
     };
