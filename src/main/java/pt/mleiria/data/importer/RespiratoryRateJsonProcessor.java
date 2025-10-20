@@ -3,7 +3,6 @@ package pt.mleiria.data.importer;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pt.mleiria.data.importer.config.Config;
 import pt.mleiria.core.StopWatch;
 import pt.mleiria.data.importer.config.DataLocation;
 import pt.mleiria.db.JsonDocument;
@@ -11,14 +10,13 @@ import pt.mleiria.vo.RespiratoryRateVo;
 
 import javax.sql.DataSource;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-public class RespiratoryRateProcessor implements GenericProcessor {
+public class RespiratoryRateJsonProcessor implements GenericJsonProcessor {
 
-    private static final Logger logger = LoggerFactory.getLogger(RespiratoryRateProcessor.class);
+    private static final Logger logger = LoggerFactory.getLogger(RespiratoryRateJsonProcessor.class);
 
     private final Function<Path, Stream<JsonDocument>> respRatePathToJsonDocumentsBiFunction = this::respRatePathToJsonDocuments;
 

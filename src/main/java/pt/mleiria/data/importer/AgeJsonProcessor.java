@@ -4,40 +4,38 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.mleiria.core.StopWatch;
-import pt.mleiria.data.importer.config.Config;
+import pt.mleiria.vo.AdvancedGlycationEndproductRawVo;
 import pt.mleiria.data.importer.config.DataLocation;
 import pt.mleiria.db.JsonDocument;
-import pt.mleiria.vo.AdvancedGlycationEndproductRawVo;
-import pt.mleiria.vo.RecoveryHeartRateVo;
 
 import javax.sql.DataSource;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-public class RecoveryHeartRateProcessor implements GenericProcessor{
+public class AgeJsonProcessor implements GenericJsonProcessor {
 
-    private static final Logger logger = LoggerFactory.getLogger(RecoveryHeartRateProcessor.class);
+    private static final Logger logger = LoggerFactory.getLogger(AgeJsonProcessor.class);
 
 
-    private final Function<Path, Stream<JsonDocument>> recHeartRateProcPathToJsonDocumentsFunction = this::recHeartRateProcPathToJsonDocuments;
+    private final Function<Path, Stream<JsonDocument>> agePathToJsonDocumentsFunction = this::agePathToJsonDocuments;
 
-    private Stream<JsonDocument> recHeartRateProcPathToJsonDocuments(Path path) {
+    private Stream<JsonDocument> agePathToJsonDocuments(Path path) {
         return pathToJsonDocumentsGeneric(
                 path,
-                new TypeReference<List<RecoveryHeartRateVo>>() {
+                new TypeReference<List<AdvancedGlycationEndproductRawVo>>() {
                 });
     }
 
     @Override
     public void processJsonFilesInFolder(final DataSource ds) {
-        final DataLocation dataLocation = DataLocation.RECOVERY_HEART_RATE;
+        final DataLocation dataLocation = DataLocation.ADVANCED_GLYCATION_ENDPRODUCT;
         final Path startPath = getStartPath(dataLocation);
         final StopWatch sw = new StopWatch();
         logger.info("Starting {} for JSON files...", this.getClass().getName());
-        processDirectory(startPath, ds, recHeartRateProcPathToJsonDocumentsFunction, dataLocation);
+        processDirectory(startPath, ds, agePathToJsonDocumentsFunction, dataLocation);
         logger.info("Running time: {} secs", sw.stop());
     }
+
 }

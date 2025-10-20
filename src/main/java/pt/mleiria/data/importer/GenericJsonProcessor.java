@@ -24,12 +24,12 @@ import static pt.mleiria.db.DatabaseProcessor.insertJsonDocumentsInBatch;
  * GenericProcessor provides methods for processing JSON files in a directory,
  * extracting data, and inserting it into a database.
  */
-public interface GenericProcessor {
+public interface GenericJsonProcessor {
 
     /**
      * Logger for logging messages and errors.
      */
-    Logger logger = LoggerFactory.getLogger(GenericProcessor.class);
+    Logger logger = LoggerFactory.getLogger(GenericJsonProcessor.class);
 
     Function<String, String> makeJsonArray = jsonContent -> jsonContent.startsWith("[")  ? jsonContent : "[" + jsonContent + "]";
 

@@ -70,6 +70,7 @@ public class HeartRateQueryExec {
         return Table.create("Heart Rate", startTime, endTime, heartRate, heartRateMin, heartRateMax);
 
     }
+
     /**
      * Executes the given SQL query and returns the result as a Tablesaw Table.
      *

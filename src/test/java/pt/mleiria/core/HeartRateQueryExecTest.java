@@ -18,6 +18,7 @@ class HeartRateQueryExecTest {
         final Table heartRate = new HeartRateQueryExec().selectAll();
         assertNotNull(heartRate);
         //assertFalse(heartRate.isEmpty());
+        System.out.println("Total rows: " + heartRate.rowCount());
         System.out.println(heartRate.print());
     }
 

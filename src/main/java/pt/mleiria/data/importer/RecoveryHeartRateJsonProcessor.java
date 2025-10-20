@@ -3,39 +3,38 @@ package pt.mleiria.data.importer;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pt.mleiria.data.importer.config.Config;
 import pt.mleiria.core.StopWatch;
 import pt.mleiria.data.importer.config.DataLocation;
 import pt.mleiria.db.JsonDocument;
-import pt.mleiria.vo.MovementVo;
+import pt.mleiria.vo.RecoveryHeartRateVo;
 
 import javax.sql.DataSource;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-public class MovementProcessor implements GenericProcessor {
+public class RecoveryHeartRateJsonProcessor implements GenericJsonProcessor {
 
-    private static final Logger logger = LoggerFactory.getLogger(MovementProcessor.class);
+    private static final Logger logger = LoggerFactory.getLogger(RecoveryHeartRateJsonProcessor.class);
 
-    private final Function<Path, Stream<JsonDocument>> movementPathToJsonDocumentsFunction = this::movementPathToJsonDocuments;
 
-    private Stream<JsonDocument> movementPathToJsonDocuments(Path path) {
+    private final Function<Path, Stream<JsonDocument>> recHeartRateProcPathToJsonDocumentsFunction = this::recHeartRateProcPathToJsonDocuments;
+
+    private Stream<JsonDocument> recHeartRateProcPathToJsonDocuments(Path path) {
         return pathToJsonDocumentsGeneric(
                 path,
-                new TypeReference<List<MovementVo>>() {
+                new TypeReference<List<RecoveryHeartRateVo>>() {
                 });
     }
 
     @Override
     public void processJsonFilesInFolder(final DataSource ds) {
-        final DataLocation dataLocation = DataLocation.MOVEMENT;
+        final DataLocation dataLocation = DataLocation.RECOVERY_HEART_RATE;
         final Path startPath = getStartPath(dataLocation);
         final StopWatch sw = new StopWatch();
         logger.info("Starting {} for JSON files...", this.getClass().getName());
-        processDirectory(startPath, ds, movementPathToJsonDocumentsFunction, dataLocation);
+        processDirectory(startPath, ds, recHeartRateProcPathToJsonDocumentsFunction, dataLocation);
         logger.info("Running time: {} secs", sw.stop());
     }
 }

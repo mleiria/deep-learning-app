@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.mleiria.core.StopWatch;
-import pt.mleiria.data.importer.config.Config;
 import pt.mleiria.data.importer.config.DataLocation;
 import pt.mleiria.db.JsonDocument;
 import pt.mleiria.vo.*;
@@ -13,17 +12,15 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import static pt.mleiria.db.DatabaseProcessor.findNewDocuments;
 import static pt.mleiria.db.DatabaseProcessor.insertJsonDocumentsInBatch;
 
-public class ExerciseProcessor implements GenericProcessor {
+public class ExerciseJsonProcessor implements GenericJsonProcessor {
 
-    private static final Logger logger = LoggerFactory.getLogger(ExerciseProcessor.class);
+    private static final Logger logger = LoggerFactory.getLogger(ExerciseJsonProcessor.class);
 
 
     private final Function<Path, Stream<JsonDocument>> exLiveDataPathToJsonDocuments = this::exLiveDataPathToJsonDocuments;

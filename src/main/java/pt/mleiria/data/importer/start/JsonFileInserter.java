@@ -22,28 +22,28 @@ public class JsonFileInserter {
 
         final DataSource ds = DataSourceFactory.getDataSource();
 
-        final AgeProcessor ageProcessor = new AgeProcessor();
+        final GenericJsonProcessor ageProcessor = new AgeJsonProcessor();
         ageProcessor.processJsonFilesInFolder(ds);
 
-        final HrvProcessor hrvProcessor = new HrvProcessor();
+        final GenericJsonProcessor hrvProcessor = new HrvJsonProcessor();
         hrvProcessor.processJsonFilesInFolder(ds);
 
-        final MovementProcessor movementProcessor = new MovementProcessor();
+        final GenericJsonProcessor movementProcessor = new MovementJsonProcessor();
         movementProcessor.processJsonFilesInFolder(ds);
 
-        final RespiratoryRateProcessor respiratoryRateProcessor = new RespiratoryRateProcessor();
+        final GenericJsonProcessor respiratoryRateProcessor = new RespiratoryRateJsonProcessor();
         respiratoryRateProcessor.processJsonFilesInFolder(ds);
 
-        final CaloriesBurnedProcessor caloriesBurnedProcessor = new CaloriesBurnedProcessor();
+        final GenericJsonProcessor caloriesBurnedProcessor = new CaloriesBurnedJsonProcessor();
         caloriesBurnedProcessor.processJsonFilesInFolder(ds);
 
-        final ExerciseProcessor exerciseProcessor = new ExerciseProcessor();
+        final GenericJsonProcessor exerciseProcessor = new ExerciseJsonProcessor();
         exerciseProcessor.processJsonFilesInFolder(ds);
 
-        final RecoveryHeartRateProcessor recoveryHeartRateProcessor = new RecoveryHeartRateProcessor();
+        final GenericJsonProcessor recoveryHeartRateProcessor = new RecoveryHeartRateJsonProcessor();
         recoveryHeartRateProcessor.processJsonFilesInFolder(ds);
 
-        final HeartRateProcessor heartRateProcessor = new HeartRateProcessor();
+        final GenericJsonProcessor heartRateProcessor = new HeartRateJsonProcessor();
         heartRateProcessor.processJsonFilesInFolder(ds);
 
         logger.info("Finished JsonFileInserter in {} secs", sw.stop());
