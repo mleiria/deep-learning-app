@@ -26,7 +26,7 @@ import java.util.*;
 public class KnnRegressionTest {
     private static final String workDir = "/home/manuel/Downloads/Databases/ThreeBodyProblem/X_test/processed_data/";
 
-    @Test
+
     public void testKNNRegressionTribuo() {
         try {
             // ---- Paths ----

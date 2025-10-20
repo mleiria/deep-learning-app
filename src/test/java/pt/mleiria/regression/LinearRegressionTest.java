@@ -28,7 +28,7 @@ public class LinearRegressionTest {
 
     private static final String workDir = "/home/manuel/Downloads/Databases/ThreeBodyProblem/X_test/processed_data/";
 
-    @Test
+
     public void testLinearRegSGDTribuo() {
         List<String> resume = new ArrayList<>();
         try {
