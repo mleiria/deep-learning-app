@@ -4,6 +4,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import tech.tablesaw.api.Table;
 
+import java.time.temporal.ChronoUnit;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class HeartRateQueryExecTest {
@@ -37,5 +39,12 @@ class HeartRateQueryExecTest {
         System.out.println(heartRate);
         assertNotNull(heartRate);
         //assertEquals(173.0, heartRate.row(0).getDouble(0));
+    }
+
+    @Test
+    void execQueryWithAggregation(){
+        final Table heartRate = new HeartRateQueryExec().execQueryWithAggregation(ChronoUnit.HOURS);
+        System.out.println(heartRate);
+        assertNotNull(heartRate);
     }
 }
