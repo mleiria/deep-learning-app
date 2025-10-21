@@ -43,7 +43,7 @@ class HeartRateQueryExecTest {
 
     @Test
     void execQueryWithAggregation(){
-        final Table heartRate = new HeartRateQueryExec().execQueryWithAggregation(ChronoUnit.HOURS);
+        final Table heartRate = new HeartRateQueryExec().execQueryWithAggregation(ChronoUnit.DAYS);
         System.out.println(heartRate);
         assertNotNull(heartRate);
     }

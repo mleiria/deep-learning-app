@@ -126,9 +126,10 @@ public class HeartRateQueryExec {
     public Table execQueryWithAggregation(final ChronoUnit dateAggregation) {
         final String sql = "select data from heart_rate";
         final Table table = executeQueryForJson(sql);
+        table.removeColumns("endTime");
 
-        final DateTimeColumn group = table.dateTimeColumn("startTime");
-        group.map(ldt -> ldt.truncatedTo(dateAggregation));
+        final DateTimeColumn group = table.dateTimeColumn("startTime")
+                .map(ldt -> ldt.truncatedTo(dateAggregation));
         // The rest of the logic is the same: summarize by this new column
         return table.summarize("heartRate", "heartRateMin", "heartRateMax", AggregateFunctions.mean)
                 .by(group).sortAscendingOn("startTime");
