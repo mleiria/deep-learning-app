@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.mleiria.config.ConfigLoader;
 import pt.mleiria.core.StopWatch;
+import pt.mleiria.data.GenericCsvProcessor;
 import pt.mleiria.db.DataSourceFactory;
 
 import javax.sql.DataSource;
@@ -20,14 +21,10 @@ import java.util.Properties;
 public class HearthRateDataCsvProcessor implements GenericCsvProcessor {
     private static final Logger logger = LoggerFactory.getLogger(HearthRateDataCsvProcessor.class);
 
-    private static final String PROPERTIES_FILE = "heartRateSql.properties";
-
     private final DataSource ds;
-    private final Properties properties;
 
     public HearthRateDataCsvProcessor() {
         this.ds = DataSourceFactory.getDataSource();
-        this.properties = ConfigLoader.loadProperties(PROPERTIES_FILE);
 
     }
 
@@ -35,7 +32,7 @@ public class HearthRateDataCsvProcessor implements GenericCsvProcessor {
     public void writeDataToCsv(final String outputFilePath) {
         final StopWatch stopWatch = new StopWatch();
         // Define the headers for your CSV file
-        final String sql = properties.getProperty("select.all.raw");
+        final String sql = ConfigLoader.INSTANCE.selectAllRawHeartRate();
         logger.info("Executing SQL: {}", sql);
         final String[] headers = {
                 "start_timestamp", "end_timestamp", "heart_rate", "heart_rate_min", "heart_rate_max"

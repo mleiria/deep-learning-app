@@ -3,41 +3,29 @@ package pt.mleiria.core;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.mleiria.config.ConfigLoader;
-import pt.mleiria.db.DataSourceFactory;
 import pt.mleiria.vo.HeartRateVo;
 import tech.tablesaw.aggregate.AggregateFunctions;
 import tech.tablesaw.api.DateTimeColumn;
 import tech.tablesaw.api.DoubleColumn;
 import tech.tablesaw.api.StringColumn;
 import tech.tablesaw.api.Table;
+import tech.tablesaw.selection.Selection;
 
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
-import static pt.mleiria.db.TablesawJdbcUtils.fromResultSet;
 import static pt.mleiria.vo.DataMapper.heartRateVoListTableFunction;
 
-public class HeartRateQueryExec {
+public class HeartRateQueryExec implements QueryExec{
 
     private static final Logger logger = LoggerFactory.getLogger(HeartRateQueryExec.class);
 
-    private static final String PROPERTIES_FILE = "heartRateSql.properties";
-
-    private final DataSource ds;
-    private final Properties properties;
-
-    public HeartRateQueryExec() {
-        this.ds = DataSourceFactory.getDataSource();
-        this.properties = ConfigLoader.loadProperties(PROPERTIES_FILE);
-
-    }
 
     /**
      * Selects all records from the heart_rate table and returns them as a Tablesaw Table.
@@ -45,7 +33,7 @@ public class HeartRateQueryExec {
      * @return A Tablesaw Table containing all records from the heart_rate table.
      */
     public Table selectAll() {
-        final String sql = properties.getProperty("select.all");
+        final String sql = ConfigLoader.INSTANCE.selectAllHeartRate();
         logger.info("Executing SQL: {}", sql);
         final StringColumn startTime = StringColumn.create("startTime");
         final StringColumn endTime = StringColumn.create("endTime");
@@ -75,27 +63,7 @@ public class HeartRateQueryExec {
 
     }
 
-    /**
-     * Executes the given SQL query and returns the result as a Tablesaw Table.
-     *
-     * @param sql The SQL query to execute.
-     * @return A Tablesaw Table containing the query results.
-     */
-    public Table executeQuery(final String sql) {
-        try (final Connection conn = ds.getConnection();
-             final PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            // CRITICAL PERFORMANCE TWEAK
-            pstmt.setFetchSize(1000);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                return fromResultSet(rs);
-            }
-        } catch (SQLException e) {
-            logger.error("Failed to execute query and create table", e);
-            return Table.create("Error Table");
-        }
-    }
 
     /**
      * Executes the given SQL query that returns JSON data and maps it to HeartRateVo objects,
@@ -104,7 +72,8 @@ public class HeartRateQueryExec {
      * @param sql The SQL query to execute.
      * @return A Tablesaw Table containing the mapped HeartRateVo data.
      */
-    public Table executeQueryForJson(final String sql) {
+    @Override
+    public Table execQueryForJson(final String sql) {
         try (final Connection conn = ds.getConnection();
              final PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
@@ -125,7 +94,7 @@ public class HeartRateQueryExec {
 
     public Table execQueryWithAggregation(final ChronoUnit dateAggregation) {
         final String sql = "select data from heart_rate";
-        final Table table = executeQueryForJson(sql);
+        final Table table = execQueryForJson(sql);
         table.removeColumns("endTime");
 
         final DateTimeColumn group = table.dateTimeColumn("startTime")
@@ -133,6 +102,24 @@ public class HeartRateQueryExec {
         // The rest of the logic is the same: summarize by this new column
         return table.summarize("heartRate", "heartRateMin", "heartRateMax", AggregateFunctions.mean)
                 .by(group).sortAscendingOn("startTime");
+    }
+
+    public Table aggregate(final Table table, final ChronoUnit dateAggregation){
+        table.removeColumns("endTime");
+
+        final DateTimeColumn group = table.dateTimeColumn("startTime")
+                .map(ldt -> ldt.truncatedTo(dateAggregation));
+        // The rest of the logic is the same: summarize by this new column
+        return table.summarize("heartRate", "heartRateMin", "heartRateMax", AggregateFunctions.mean)
+                .by(group).sortAscendingOn("startTime");
+    }
+
+    public Table execQueryFilterByDate(final int year, final int month, final int day) {
+        final String sql = "select data from heart_rate";
+        final Table table = execQueryForJson(sql);
+        final LocalDate targetDate = LocalDate.of(year, month, day);
+        final Selection selection = table.dateTimeColumn("startTime").date().isEqualTo(targetDate);
+        return table.where(selection).sortAscendingOn("startTime");
     }
 
 }

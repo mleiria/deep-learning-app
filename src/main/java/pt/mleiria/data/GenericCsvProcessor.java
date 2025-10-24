@@ -1,4 +1,4 @@
-package pt.mleiria.data.exporter;
+package pt.mleiria.data;
 
 public interface GenericCsvProcessor {
 

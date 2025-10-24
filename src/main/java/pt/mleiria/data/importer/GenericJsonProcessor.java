@@ -3,8 +3,8 @@ package pt.mleiria.data.importer;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pt.mleiria.config.ConfigLoader;
 import pt.mleiria.core.JacksonUtils;
-import pt.mleiria.data.importer.config.Config;
 import pt.mleiria.data.importer.config.DataLocation;
 import pt.mleiria.db.JsonDocument;
 
@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -41,7 +42,7 @@ public interface GenericJsonProcessor {
     void processJsonFilesInFolder(final DataSource ds);
 
     default Path getStartPath(final DataLocation dataLocation){
-        return Paths.get(Config.DATA_FOLDER.getValue() + dataLocation.getFolderName());
+        return Paths.get( ConfigLoader.INSTANCE.getDataFolder() + dataLocation.getFolderName());
     }
 
     /**
