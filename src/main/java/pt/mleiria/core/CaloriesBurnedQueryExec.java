@@ -41,5 +41,31 @@ public class CaloriesBurnedQueryExec implements QueryExec {
         }
     }
 
+    public Table execQueryForJson() {
+        final String sql = "select uuid, data from calories_burned_details where (data ->> 'activityList') IS NOT NULL";
+        try (final Connection conn = ds.getConnection();
+             final PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            // CRITICAL PERFORMANCE TWEAK
+            pstmt.setFetchSize(1000);
+            final List<CaloriesBurnedVo> caloriesBurnedVos = new ArrayList<>();
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    final String uuid = rs.getString(1);
+                    JacksonUtils.optionalDecode(rs.getString(2), CaloriesBurnedVo.class).ifPresent(
+                            caloriesBurnedVo -> {
+                                caloriesBurnedVo.setUuid(uuid);
+                            caloriesBurnedVos.add(caloriesBurnedVo);
+                            }
+                    );
+                }
+            }
+            return caloriesBurnedVoListTableFunction.apply(caloriesBurnedVos);
+        } catch (SQLException e) {
+            logger.error("Failed to execute query and create table", e);
+            return Table.create("Error Table");
+        }
+    }
+
 
 }

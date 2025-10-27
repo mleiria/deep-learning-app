@@ -92,6 +92,11 @@ public class HeartRateQueryExec implements QueryExec{
         }
     }
 
+    @Override
+    public Table execQueryForJson() {
+        return execQueryForJson("SELECT data FROM heart_rate");
+    }
+
     public Table execQueryWithAggregation(final ChronoUnit dateAggregation) {
         final String sql = "select data from heart_rate";
         final Table table = execQueryForJson(sql);

@@ -31,10 +31,19 @@ public class CaloriesBurnedVo {
     @JsonProperty("weight")
     private double weight;
 
+    private String uuid;
+
     // Default no-argument constructor
     public CaloriesBurnedVo() {
     }
 
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
     // --- Getters and Setters ---
 
     public int getActivityLevel() {

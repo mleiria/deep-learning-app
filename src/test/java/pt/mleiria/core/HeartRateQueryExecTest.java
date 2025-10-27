@@ -64,4 +64,11 @@ class HeartRateQueryExecTest {
         assertNotNull(aggregatedTable);
         IOUtils.save(aggregatedTable, ConfigLoader.INSTANCE.getDataFolderCsv() + "heartRateMean_2026_06_09.csv");
     }
+
+    @Test
+    void testExecQueryForJson() {
+        final Table heartRate = new HeartRateQueryExec().execQueryForJson();
+        System.out.println(heartRate);
+        assertNotNull(heartRate);
+    }
 }

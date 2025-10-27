@@ -21,39 +21,41 @@ public class DataMapper {
     public static final Function<List<HeartRateVo>, Table> heartRateVoListTableFunction = heartRateVoList -> {
         final Table table = Table.create("Heart Rate Data");
         if (Validator.isNotEmptyList(heartRateVoList)) {
-            table.addColumns(
-                    DateTimeColumn.create(
-                            "startTime",
-                            heartRateVoList.stream()
-                                    .map(vo -> DateUtils.convertTimestampToLocalDateTime.apply(vo.getStartTime()))),
-                    DateTimeColumn.create(
-                            "endTime",
-                            heartRateVoList.stream()
-                                    .map(vo -> DateUtils.convertTimestampToLocalDateTime.apply(vo.getEndTime()))),
-                            DoubleColumn.create("heartRate", heartRateVoList.stream().mapToDouble(HeartRateVo::getHeartRate).toArray()),
-                            DoubleColumn.create("heartRateMin", heartRateVoList.stream().mapToDouble(HeartRateVo::getHeartRateMin).toArray()),
-                            DoubleColumn.create("heartRateMax", heartRateVoList.stream().mapToDouble(HeartRateVo::getHeartRateMax).toArray())
-                    );
+            final DateTimeColumn startTimeCol = DateTimeColumn.create("startTime");
+            final DateTimeColumn endTimeCol = DateTimeColumn.create("endTime");
+            final DoubleColumn heartRateCol = DoubleColumn.create("heartRate");
+            final DoubleColumn heartRateMinCol = DoubleColumn.create("heartRateMin");
+            final DoubleColumn heartRateMaxCol = DoubleColumn.create("heartRateMax");
+            for (final HeartRateVo heartRateVo : heartRateVoList) {
+                startTimeCol.append(DateUtils.convertTimestampToLocalDateTime.apply(heartRateVo.getStartTime()));
+                endTimeCol.append(DateUtils.convertTimestampToLocalDateTime.apply(heartRateVo.getEndTime()));
+                heartRateCol.append(heartRateVo.getHeartRate());
+                heartRateMinCol.append(heartRateVo.getHeartRateMin());
+                heartRateMaxCol.append(heartRateVo.getHeartRateMax());
+            }
+            table.addColumns(startTimeCol, endTimeCol, heartRateCol, heartRateMinCol, heartRateMaxCol);
         }
         return table;
     };
 
     public static final Function<List<CaloriesBurnedVo>, Table> caloriesBurnedVoListTableFunction = caloriesBurnedVoList -> {
         // Create the table and define the column structure first.
-        Table table = Table.create("Calories Burned Data");
+        final Table table = Table.create("Calories Burned Data");
 
         // Check if the list is valid before proceeding.
         if (Validator.isNotEmptyList(caloriesBurnedVoList)) {
             // 1. Create empty columns that will hold the data.
-            IntColumn ageCol = IntColumn.create("age");
-            StringColumn genderCol = StringColumn.create("gender");
-            DoubleColumn heightCol = DoubleColumn.create("height");
-            DoubleColumn weightCol = DoubleColumn.create("weight");
-            IntColumn stepCountCol = IntColumn.create("stepCount");
-            StringColumn activityList = StringColumn.create("activityList");
+            final StringColumn uuidCol = StringColumn.create("uuid");
+            final IntColumn ageCol = IntColumn.create("age");
+            final StringColumn genderCol = StringColumn.create("gender");
+            final DoubleColumn heightCol = DoubleColumn.create("height");
+            final DoubleColumn weightCol = DoubleColumn.create("weight");
+            final IntColumn stepCountCol = IntColumn.create("stepCount");
+            final StringColumn activityList = StringColumn.create("activityList");
 
             // 2. Iterate through the list ONCE, appending data to each column.
-            for (CaloriesBurnedVo vo : caloriesBurnedVoList) {
+            for (final CaloriesBurnedVo vo : caloriesBurnedVoList) {
+                uuidCol.append(vo.getUuid());
                 ageCol.append(vo.getAge());
                 genderCol.append(vo.getGender());
                 heightCol.append(vo.getHeight());
@@ -63,7 +65,7 @@ public class DataMapper {
             }
 
             // 3. Add the now-populated columns to the table.
-            table.addColumns(ageCol, genderCol, heightCol, weightCol, stepCountCol, activityList);
+            table.addColumns(uuidCol, ageCol, genderCol, heightCol, weightCol, stepCountCol, activityList);
         }
         return table;
     };

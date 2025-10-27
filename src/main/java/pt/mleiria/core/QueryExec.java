@@ -19,6 +19,7 @@ public interface QueryExec {
     DataSource ds = DataSourceFactory.getDataSource();
 
     Table execQueryForJson(final String sql);
+    Table execQueryForJson();
 
     default Table execQuery(final String sql){
         try (final Connection conn = ds.getConnection();

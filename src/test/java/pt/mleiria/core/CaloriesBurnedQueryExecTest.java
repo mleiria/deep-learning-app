@@ -9,9 +9,8 @@ class CaloriesBurnedQueryExecTest {
 
     @Test
     void execQueryForJson() {
-        final String sql = "select data from calories_burned_details where (data ->> 'activityList') IS NOT NULL";
-        final QueryExec  queryExec = new CaloriesBurnedQueryExec();
-        final Table table = queryExec.execQueryForJson(sql);
+        final CaloriesBurnedQueryExec  queryExec = new CaloriesBurnedQueryExec();
+        final Table table = queryExec.execQueryForJson();
         System.out.println(table);
         assertNotNull(table);
     }
